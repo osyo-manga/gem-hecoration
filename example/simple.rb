@@ -39,7 +39,7 @@ class X
 		}
 	}
 
-	# +@ is decorate, when next defined method.
+	# +@ is decorate, when next defined instance_method/class_method.
 	+deco
 	def hello2
 		p "hello2"
