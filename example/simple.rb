@@ -9,12 +9,14 @@ class X
 	extend Hecoration::Decoratable
 
 	def self.deco
-		# Wrapping block
-		decorator {
-			puts "--- start ---"
-			# Call original method
-			super()
-			puts "--- end ---"
+		# f is decorat instance_method
+		decorator { |f|
+			proc {
+				puts "--- start ---"
+				# Call original method
+				f.bind(self).call
+				puts "--- end ---"
+			}
 		}
 	end
 
@@ -28,9 +30,11 @@ class X
 
 	def self.print_args
 		# With arguments.
-		decorator { |*args|
-			puts "args:#{args}"
-			super(*args)
+		decorator { |f|
+			proc { |*args|
+				puts "args:#{args}"
+				f.bind(self).call(*args)
+			}
 		}
 	end
 
