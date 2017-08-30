@@ -4,7 +4,7 @@ class X
 	#==================================
 	# decorate defined method
 
-	# Using Object#decorate_method
+	# Using Module#decorate_method
 	using Hecoration
 
 	def hello1
