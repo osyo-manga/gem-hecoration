@@ -1,19 +1,22 @@
 require "hecoration"
 
+extend Hecoration::Decoratable
+
 def deco
 	# Wrapping block
-	Hecoration.decorator {
-		puts "--- start ---"
-		# Call original method
-		super()
-		puts "--- end ---"
+	decorator { |f|
+		proc {
+			puts "--- start ---"
+			# Call original method
+			f.bind(self).call
+			puts "--- end ---"
+		}
 	}
 end
 
 # Wrap method when next defined method.
-# NOTE: Top level method is non thread safe.
-# Because, Object.method_added/Object.singleton_method is defined.
-+deco
+# Must be call #rebind(Object)
++deco.rebind(Object)
 def hello
 	puts "hello"
 end
@@ -27,13 +30,15 @@ hello
 
 def print_args
 	# With arguments.
-	Hecoration.decorator { |*args|
-		puts "args:#{args}"
-		super(*args)
+	decorator { |f|
+		proc { |*args|
+			puts "args:#{args}"
+			f.bind(self).call(*args)
+		}
 	}
 end
 
-+print_args
++print_args.rebind(Object)
 def plus a, b
 	a + b
 end
