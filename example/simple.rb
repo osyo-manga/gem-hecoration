@@ -1,59 +1,64 @@
 require "hecoration"
 
 class X
-	def initialize name
-		@name = name
+	#==================================
+	# decorate defined method
+
+	# Using .decorate_method
+	using Hecoration
+
+	def hello1
+		p "hello1"
 	end
+
+	# decorate #hello1
+	# f is original instance_method
+	decorate_method(:hello1){ |f|
+		proc {
+			puts "--- deco ---"
+			# Call original method
+			f.bind(self).call
+			puts "--- end ---"
+		}
+	}
+
+	#==================================
+	# define method with decorate
 
 	# Using .decorator
 	extend Hecoration::Decoratable
 
-	def self.deco
-		# f is decorat instance_method
-		decorator { |f|
-			proc {
-				puts "--- start ---"
-				# Call original method
-				f.bind(self).call
-				puts "--- end ---"
-			}
+	# Define decorator
+ 	# f is original instance_method
+	deco = decorator { |f|
+		proc {
+			puts "--- deco ---"
+			# Call original method
+			f.bind(self).call
+			puts "--- end ---"
 		}
-	end
+	}
 
+	# +@ is decorate, when next defined method.
 	+deco
-	# or
-	# deco.wrap
-	def hello
-		p "hello, #{@name}"
-	end
-
-
-	def self.print_args
-		# With arguments.
-		decorator { |f|
-			proc { |*args|
-				puts "args:#{args}"
-				f.bind(self).call(*args)
-			}
-		}
-	end
-
-	+print_args
-	def add x
-		@name = "#{@name}, #{x}"
+	def hello2
+		p "hello2"
 	end
 end
 
-x = X.new "mami"
+x = X.new
 
-x.hello
-# --- start ---
-# "hello, mami"
+x.hello1
+# output:
+# --- deco ---
+# "hello1"
 # --- end ---
 
 
-puts x.add "homu"
+x.hello2
 # output:
-# args:["homu"]
-# mami, homu
+# --- deco ---
+# "hello2"
+# --- end ---
+
 
