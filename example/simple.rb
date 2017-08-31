@@ -13,7 +13,7 @@ class X
 
 	# decorate #hello1
 	# f is original instance_method
-	decorate_method(:hello1){ |f|
+	deco = proc { |f|
 		proc {
 			puts "--- deco ---"
 			# Call original method
@@ -21,6 +21,9 @@ class X
 			puts "--- end ---"
 		}
 	}
+	decorate_method(:hello1, &deco)
+	# It is the same as the code
+# 	define_method(:hello1, &deco.call(instance_method(:hello1)))
 
 	#==================================
 	# define method with decorate
@@ -29,6 +32,8 @@ class X
 	extend Hecoration::Decoratable
 
 	# Define decorator
+	# .decorator return Hecoration::Decorator.new self, &block
+	# self is adding .method_added/.singleton_method_added
  	# f is original instance_method
 	deco = decorator { |f|
 		proc {
@@ -40,10 +45,12 @@ class X
 	}
 
 	# +@ is decorate, when next defined instance_method/class_method.
+	# added self.method_added and self.singleton_method_added
 	+deco
 	def hello2
 		p "hello2"
 	end
+	# removed self.method_added and self.singleton_method_added
 end
 
 x = X.new
