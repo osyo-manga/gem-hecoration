@@ -18,7 +18,7 @@ module Hecoration
 				begin
 					instance_exec &block
 				ensure
-					singleton_class.send(:unprepend, m)
+					singleton_class.unprepend m
 				end
 			end
 		end
