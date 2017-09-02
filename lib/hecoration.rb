@@ -68,7 +68,7 @@ module Hecoration
 			wrapper = @wrapper
 			target  = @target
 			m = Hecoration.hook_method_added { |name|
-				target.unextend m
+				target.singleton_class.send(:unprepend, m)
 				decorate_method(name, &wrapper)
 			}
 			target.singleton_class.prepend m
