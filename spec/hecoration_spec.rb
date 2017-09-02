@@ -102,5 +102,16 @@ RSpec.describe Hecoration do
 		it { expect(instance.imethod4).to eq :imethod4 }
 		it { expect(class_.cmethod1).to eq ["deco", class_, :cmethod1] }
 		it { expect(instance.plus 1, 2).to eq ["deco", instance, 3] }
+		it { expect {
+			class_.class_eval {
+				+deco
+			}
+		}.to change { class_.singleton_class.ancestors } }
+		it { expect {
+			class_.class_eval {
+				+deco
+				def hoge; end
+			}
+		}.to_not change { class_.singleton_class.ancestors } }
 	end
 end
