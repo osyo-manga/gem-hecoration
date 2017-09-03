@@ -26,14 +26,21 @@ module Hecoration
 
 		refine Module do
 			def decorate_method name, &block
-				silent_eval { define_method(name, &block.call(instance_method(name))) }
+				new_method = block.call(instance_method(name))
+				if Method === new_method || UnboundMethod === new_method
+					silent_eval { define_method(name, new_method) }
+				elsif new_method.respond_to? :to_proc
+					silent_eval { define_method(name, &new_method) }
+				else
+					name
+				end
 			end
 		end
 
 		refine Object do
 			def decorate_singleton_method name, &block
 				silent_eval {
-					define_singleton_method(name, &block.call(method(name).unbind))
+					singleton_class.decorate_method(name, &block)
 				}
 			end
 		end
