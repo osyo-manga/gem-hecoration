@@ -90,10 +90,6 @@ module Hecoration
 		def to_proc
 			@wrapper
 		end
-
-		def call *args
-			@wrapper.call *args
-		end
 	end
 
 	module Decoratable
