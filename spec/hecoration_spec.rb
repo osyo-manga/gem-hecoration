@@ -27,9 +27,15 @@ RSpec.describe Hecoration do
 			extend Deco
 
 			def hoge
+				:hoge
+			end
+
+			def deco
+				:deco
 			end
 
 			def self.hoge
+				:hoge
 			end
 
 			def self.method_added name
@@ -44,15 +50,71 @@ RSpec.describe Hecoration do
 	}
 	let(:instance) { class_.new }
 
-	context "Object#decorate_method" do
+	context "Module#decorate_method" do
+
+		shared_examples "デコレートする" do |result = :deco|
+			it { expect(subject.call).to eq(:hoge) }
+
+			it { is_expected.not_to change{ class_.singleton_class.ancestors } }
+			it { is_expected.not_to change{ class_.instance_exec { @instance_method } } }
+			it { is_expected.to change{ class_.new.hoge }.from(:hoge).to(result) }
+			it { is_expected.to change{ class_.instance_method(:hoge) } }
+
+			context "例外が発生した場合" do
+				subject { proc {
+					begin
+						class_.decorate_method(:hoge) { raise }
+					rescue
+					end
+				} }
+				it { is_expected.not_to change{ class_.singleton_class.ancestors } }
+			end
+		end
+
 		using Hecoration
-		it { expect {
-			class_.decorate_method(:hoge) { |f| proc { } }
-		}.not_to change{ class_.instance_exec { @instance_method } } }
+
+		context "Proc を返した場合" do
+			subject { proc { class_.decorate_method(:hoge) { |f| proc { :deco } } } }
+			it_behaves_like "デコレートする"
+		end
+
+		context "UnboundMethod を返した場合" do
+			subject { proc { class_.decorate_method(:hoge) { |f| class_.instance_method(:deco) } } }
+			it_behaves_like "デコレートする"
+		end
+
+		context "Method を返した場合" do
+			subject { proc { class_.decorate_method(:hoge) { |f| class_.new.method(:deco) } } }
+			it_behaves_like "デコレートする"
+		end
+
+		context "nil を返した場合" do
+			subject { proc { class_.decorate_method(:hoge) { |f| nil } } }
+			it { expect(subject.call).to eq(:hoge) }
+			it { is_expected.to_not change{ class_.instance_method(:hoge) } }
+		end
+
+		context "super() を呼び出した場合" do
+			subject {
+				Class.new(Class.new { def hoge; :super; end }){
+					def hoge; end
+					decorate_method(:hoge){ |f| proc { "deco:#{super()}" } }
+				}.new.hoge
+			}
+			it { is_expected.to eq("deco:super") }
+		end
+	end
+
+	context "Object#decorate_singleton_method" do
+		using Hecoration
+		subject { proc { class_.decorate_singleton_method(:hoge) { |f| proc { :deco } } } }
+
+		it { expect(subject.call).to eq(:hoge) }
+		it { is_expected.to change{ class_.hoge }.from(:hoge).to(:deco) }
 
 		it { expect {
 			class_.decorate_singleton_method(:hoge) { |f| proc { } }
-		}.not_to change{ class_.instance_exec { @singleton_method } } }
+		}.not_to change{ class_.instance_exec { @added } } }
 	end
 
 	context "Decorator#wrap" do
