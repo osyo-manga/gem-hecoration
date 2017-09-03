@@ -78,6 +78,7 @@ module Hecoration
 				target.singleton_class.unprepend m
 				decorate_method(name, &wrapper)
 			}
+			# NOTE: hook_method_added の優先度を一番高くするため prepend する
 			target.singleton_class.prepend m
 		end
 		alias_method :+@, :wrap
