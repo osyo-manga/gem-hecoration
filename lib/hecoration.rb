@@ -22,7 +22,6 @@ module Hecoration
 				end
 			end
 		end
-		using Refine
 
 		refine Module do
 			def decorate_method name, &block
