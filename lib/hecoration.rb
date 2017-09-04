@@ -28,9 +28,9 @@ module Hecoration
 			def decorate_method name, &block
 				new_method = block.call(instance_method(name))
 				if Method === new_method || UnboundMethod === new_method
-					silent_eval { define_method(name, new_method) }
+					define_method(name, new_method)
 				elsif new_method.respond_to? :to_proc
-					silent_eval { define_method(name, &new_method) }
+					define_method(name, &new_method)
 				else
 					name
 				end
@@ -39,9 +39,7 @@ module Hecoration
 
 		refine Object do
 			def decorate_singleton_method name, &block
-				silent_eval {
-					singleton_class.decorate_method(name, &block)
-				}
+				singleton_class.decorate_method(name, &block)
 			end
 		end
 	end
@@ -76,7 +74,7 @@ module Hecoration
 			target  = @target
 			m = Hecoration.hook_method_added { |name|
 				target.singleton_class.unprepend m
-				decorate_method(name, &wrapper)
+				silent_eval { decorate_method(name, &wrapper) }
 			}
 			# NOTE: hook_method_added の優先度を一番高くするため prepend する
 			target.singleton_class.prepend m

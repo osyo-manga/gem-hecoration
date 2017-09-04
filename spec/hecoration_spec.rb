@@ -56,7 +56,7 @@ RSpec.describe Hecoration do
 			it { expect(subject.call).to eq(:hoge) }
 
 			it { is_expected.not_to change{ class_.singleton_class.ancestors } }
-			it { is_expected.not_to change{ class_.instance_exec { @instance_method } } }
+			it { is_expected.to change{ class_.instance_exec { @instance_method } }.from(nil).to(:hoge) }
 			it { is_expected.to change{ class_.new.hoge }.from(:hoge).to(result) }
 			it { is_expected.to change{ class_.instance_method(:hoge) } }
 

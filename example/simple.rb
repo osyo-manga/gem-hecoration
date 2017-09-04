@@ -1,71 +1,79 @@
 require "hecoration"
 
+# define decorator
+module Deco
+	# define #decorator
+	include Hecoration::Decoratable
+
+	def deco
+		# f is original instance method
+		decorator { |f|
+			# Wrapping method.
+			proc { |*args|
+				puts "decorating method"
+				# Call original method
+				f.bind(self).call *args
+			}
+		}
+	end
+
+	def logger
+		decorator { |f|
+			proc { |*args|
+				puts "--- #{f.name} ---"
+				puts "args:#{args}"
+				puts "result:#{f.bind(self).call *args}"
+			}
+		}
+	end
+end
+
+# Decorate class instance method.
 class X
-	#==================================
-	# decorate defined method
+	extend Deco
 
 	# Using Module#decorate_method
 	using Hecoration
 
-	def hello1
-		p "hello1"
+	def hello
+		p "hello"
 	end
-
-	# decorate #hello1
-	# f is original instance_method
-	deco = proc { |f|
-		proc {
-			puts "--- deco ---"
-			# Call original method
-			f.bind(self).call
-			puts "--- end ---"
-		}
-	}
-	decorate_method(:hello1, &deco)
+	# decorate method
+	decorate_method(:hello, &deco)
 	# It is the same as the code
-# 	define_method(:hello1, &deco.call(instance_method(:hello1)))
-
-	#==================================
-	# define method with decorate
-
-	# Using .decorator
-	extend Hecoration::Decoratable
-
-	# Define decorator
-	# .decorator return Hecoration::Decorator.new self, &block
-	# self is adding .method_added/.singleton_method_added
- 	# f is original instance_method
-	deco = decorator { |f|
-		proc {
-			puts "--- deco ---"
-			# Call original method
-			f.bind(self).call
-			puts "--- end ---"
-		}
-	}
+# 	define_method(:hello, &deco.call(instance_method(:hello)))
 
 	# +@ is decorate, when next defined instance_method/class_method.
-	# added self.method_added and self.singleton_method_added
-	+deco
-	def hello2
-		p "hello2"
+	+logger
+	def initialize n
+		@value = n
 	end
-	# removed self.method_added and self.singleton_method_added
+
+	+deco
+	+logger
+	def add n
+		@value += n
+	end
 end
 
-x = X.new
 
-x.hello1
+x = X.new 3
 # output:
-# --- deco ---
-# "hello1"
-# --- end ---
+# --- initialize ---
+# args:[3]
+# result:3
 
-
-x.hello2
+x.hello
 # output:
-# --- deco ---
-# "hello2"
-# --- end ---
+# decorating method
+# "hello"
+
+x.add 5
+# output:
+# decorating method
+# --- add ---
+# args:[5]
+# result:8
+
 
 
