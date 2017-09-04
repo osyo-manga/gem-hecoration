@@ -71,7 +71,7 @@ module Hecoration
 			@wrapper = wrapper
 		end
 
-		def wrap
+		def wrap_next_defined_method
 			wrapper = @wrapper
 			target  = @target
 			m = Hecoration.hook_method_added { |name|
@@ -81,7 +81,7 @@ module Hecoration
 			# NOTE: hook_method_added の優先度を一番高くするため prepend する
 			target.singleton_class.prepend m
 		end
-		alias_method :+@, :wrap
+		alias_method :+@, :wrap_next_defined_method
 
 		def rebind klass
 			Decorator.new klass, &@wrapper
