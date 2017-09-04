@@ -117,7 +117,7 @@ RSpec.describe Hecoration do
 		}.not_to change{ class_.instance_exec { @added } } }
 	end
 
-	context "Decorator#wrap" do
+	context "Decorator#wrap_next_defined_method" do
 		before {
 			class_.class_eval {
 				+deco
